@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Location Map</title>
+  <style>
+    #map { height: 90vh; width: 100%; }
+    button { margin: 10px; }
+  </style>
+</head>
+<body onload="startAutoFetch()">
+  <button onclick="fetchLocation()">Fetch Location</button>
+  <div id="map">Loading...</div>
+  <script>
+    let map;
+    let marker;
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 16,
+        center: { lat: 0, lng: 0 },
+        mapTypeId: 'satellite'
+      });
+    }
+
+    function fetchLocation() {
+      fetch("http://localhost:5000/send-location")
+        .then(response => {
+          console.log("Raw response:", response);
+          return response.json();
+        })
+        .then(data => {
+          console.log("Parsed JSON:", data);
+          if (data.latitude && data.longitude) {
+            const position = { lat: data.latitude, lng: data.longitude };
+            map.setCenter(position);
+            if (marker) marker.setMap(null);
+            marker = new google.maps.Marker({ position, map });
+          } else {
+            <!-- alert("Invalid location data"); -->
+          }
+        })
+        .catch(error => {
+          console.error("Fetch error:", error);
+          <!-- alert("Failed to fetch location"); -->
+        });
+    }
+	
+	function startAutoFetch() {
+		setInterval(fetchLocation, 5000); // fetch every 5 sec
+	}
+
+  </script>
+
+  <!-- Replace YOUR_API_KEY with your Google Maps API key -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA23bw-92Di5_bMqZTc0n1aIkCcIIw1Xxc&callback=initMap" async defer></script>
+</body>
+</html>
